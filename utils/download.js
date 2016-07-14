@@ -7,11 +7,7 @@ var cheerio = require('cheerio');
 var fs = require('fs');
 const downloaderConstants = require('../constants');
 var async = require('async');
-
-
-/*
-TODO:add songs to aws s3
- */
+var aws = require('./awsUtil');
 
 function downloadSong(param, cb) {
 
@@ -42,6 +38,27 @@ function downloadSong(param, cb) {
                 });
             });
             
+        },
+
+        function (songURL, callback) {
+            var songName = songURL.split('/')[2];
+            var songPath = __dirname + "/../public" + songURL;
+            var fileContent = fs.createReadStream(songPath);
+            var param = {songName:songName,config:{Bucket:"vcrmusic",Key:songName,Body:fileContent,ACL:"public-read"}};
+            aws.uploadToS3(param.config, function (err,data) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    fs.unlink(songPath, function (err) {
+                        if(err){
+                            console.log(err);
+                        } else {
+                            var songURL = downloaderConstants.awsS3URL + param.config.Bucket + "/" + param.config.Key;
+                            callback(err,songURL);
+                        }
+                    });
+                }
+            });
         }
     ], function (error, result) {
         console.log(result);

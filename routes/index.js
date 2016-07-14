@@ -9,7 +9,7 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/download/:query',function (req, res) {
+router.get('/download/:query',function (req, res, next) {
   downloader.downloadSong(req.params.query,function (err, result) {
     if(err) {
       res.status(404).json({success:false,msg:"some error"});
