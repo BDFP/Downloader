@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var downloader = require('../utils/download');
+var songList = require('../utils/songListing');
 var path = require('path');
 var fs = require('fs');
 
@@ -35,6 +36,16 @@ router.get('/download/:query',function (req, res) {
       res.status(200).json({success:true,url:result});
     }
   });
+});
+
+router.get('/getTopSongs', function (req, res) {
+    songList.getTopSongs(function (err, result) {
+      if(err) {
+        res.status(404).json({msg:"some error occurred"})
+      } else {
+        res.status(200).json(result);
+      }
+    })
 });
 
 module.exports = router;
