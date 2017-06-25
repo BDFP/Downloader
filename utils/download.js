@@ -27,44 +27,19 @@ function downloadSong(param, flag, cb) {
 
         function (arrResult,callback) {
             var filePath = __dirname + "/../public/songs/song.m4a";
+            console.log(downloaderConstants.youtubeCMD + filePath + arrResult[1]);
             exec(downloaderConstants.youtubeCMD + filePath + arrResult[1], function (error) {
                 fs.rename(filePath, arrResult[0], function (err) {
                     if (err) {
                         console.log(err)
                     } else {
-                        callback(error,arrResult[2]);
+                        callback(error,arrResult[0]);
                     }
                 });
             });
             
-        },
-
-        function (songURL, callback) {
-            var songName = songURL.split('/')[2];
-            var songPath = __dirname + "/../public" + songURL;
-            var fileContent = fs.createReadStream(songPath);
-            var param = {songName:songName,config:{Bucket:"vcrmusic",Key:songName,Body:fileContent,ACL:"public-read"}};
-            aws.uploadToS3(param.config, function (err) {
-                if(err) {
-                    console.log(err);
-                } else {
-                    switch (flag) {
-                        case 1:
-                        fs.unlink(songPath, function (err) {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    var songURLFromS3 = downloaderConstants.awsS3URL + param.config.Bucket + "/" + param.config.Key;
-                                    callback(err, songURLFromS3);
-                                }
-                            });
-                            break;
-                        default:
-                            callback(err, songURL);
-                    }
-                }
-            });
         }
+
     ], function (error, result) {
         console.log(result);
         cb(error,result)
